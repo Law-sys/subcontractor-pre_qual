@@ -38,6 +38,25 @@ export default function Page() {
     const rsl = EnterpriseAIService.calculateContractorScore(formData as any);
     setResults(rsl);
     setCalculating(false);
+
+    // Send completion notifications
+    try {
+      await fetch('/api/notify-completion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyName: formData.companyLegalName,
+          submitterEmail: formData.primaryContact?.includes('@') 
+            ? formData.primaryContact.match(/[\w.-]+@[\w.-]+\.[\w.-]+/)?.[0] 
+            : 'unknown@email.com',
+          results: rsl,
+          formData
+        })
+      });
+      console.log('✅ Completion notifications sent');
+    } catch (error) {
+      console.warn('⚠️ Failed to send completion notifications:', error);
+    }
   };
 
   return (

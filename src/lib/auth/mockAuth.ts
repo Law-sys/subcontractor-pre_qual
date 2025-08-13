@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import emailjs from "emailjs-com";
 
 const invitedEmails = [
   "admin@tweetgarot.com",
@@ -26,24 +25,43 @@ export const mockAuth = {
   },
 
   async sendInvitationEmail(email: string, code: string, companyName = "") {
-    const service = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!;
-    const template = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!;
-    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!;
-    const portalUrl = typeof window !== "undefined" ? window.location.href : "";
+    const portalUrl = typeof window !== "undefined" ? window.location.origin : "";
 
     try {
-      await emailjs.send(service, template, {
-        to_name: companyName || "Contractor",
-        to_email: email,
-        access_code: code,
-        portal_url: portalUrl,
-      }, publicKey);
-      // Optional toast
-      return true;
-    } catch (e) {
-      console.warn("EmailJS failed, simulate instead", e);
+      const response = await fetch('/api/send-invitation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          accessCode: code,
+          companyName,
+          portalUrl
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('✅ Invitation email sent successfully:', result.messageId);
+        // Show success message in development
+        if (typeof window !== "undefined" && process.env.NODE_ENV === 'development') {
+          alert(`📧 Invitation email sent to: ${email}\nAccess Code: ${code}`);
+        }
+        return true;
+      } else {
+        console.warn('❌ Email sending failed:', result.error);
+        // Fallback alert for development
+        if (typeof window !== "undefined") {
+          alert(`📧 Email would be sent to: ${email}\nAccess Code: ${code}\nURL: ${portalUrl}\n\nError: ${result.error}\n\nNote: Make sure RESEND_API_KEY is configured.`);
+        }
+        return false;
+      }
+    } catch (e: any) {
+      console.warn("API request error:", e);
       if (typeof window !== "undefined") {
-        alert(`📧 Email simulation -> ${email}\nAccess Code: ${code}\nURL: ${portalUrl}`);
+        alert(`📧 Email simulation -> ${email}\nAccess Code: ${code}\nURL: ${portalUrl}\n\nConfigure Resend API to send real emails.\nError: ${e.message}`);
       }
       return false;
     }

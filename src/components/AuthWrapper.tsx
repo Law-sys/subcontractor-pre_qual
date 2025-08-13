@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import TweetgarotLogo from "./TweetgarotLogo";
 import SmartInput from "./SmartInput";
-import { Mail, Lock, ArrowRight, LogOut } from "lucide-react";
+import { Mail, Lock, ArrowRight, LogOut, UserPlus } from "lucide-react";
 import { mockAuth } from "../lib/auth/mockAuth";
+import InviteContractorModal from "./admin/InviteContractorModal";
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
@@ -13,6 +14,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   const [accessCode, setAccessCode] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   useEffect(() => {
     setUser(mockAuth.currentUser);
@@ -34,6 +36,10 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   const signOut = async () => {
     await mockAuth.signOut();
     setUser(null); setEmail(""); setAccessCode(""); setError("");
+  };
+
+  const handleInviteContractor = () => {
+    setShowInviteModal(true);
   };
 
   if (loading) {
@@ -85,25 +91,40 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div>
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-4">
-          <TweetgarotLogo size="md" isHeader />
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <div className="text-sm font-medium text-gray-700">{user.email}</div>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${user.isAdmin ? "text-white" : "bg-gray-100 text-gray-800"}`}
-                    style={user.isAdmin ? { backgroundColor: "var(--tg-primary-600)" } : {}}>
-                {user.isAdmin ? "Administrator" : "Contractor"}
-              </span>
-            </div>
-            <button onClick={signOut} className="flex items-center px-4 py-2 rounded-xl border border-gray-300 text-gray-600 hover:shadow">
-              <LogOut className="w-4 h-4 mr-2" /> Sign Out
-            </button>
-          </div>
-        </div>
+  <div>
+  <div className="bg-white shadow-sm border-b">
+  <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-4">
+  <TweetgarotLogo size="md" isHeader />
+  <div className="flex items-center gap-4">
+  <div className="text-right">
+  <div className="text-sm font-medium text-gray-700">{user.email}</div>
+  <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${user.isAdmin ? "text-white" : "bg-gray-100 text-gray-800"}`}
+  style={user.isAdmin ? { backgroundColor: "var(--tg-primary-600)" } : {}}>
+  {user.isAdmin ? "Administrator" : "Contractor"}
+  </span>
+  </div>
+  {user.isAdmin && (
+  <button 
+  onClick={handleInviteContractor}
+  className="flex items-center px-4 py-2 rounded-xl text-white font-medium hover:shadow-lg transition-all"
+  style={{ backgroundColor: "var(--tg-primary-600)" }}
+  >
+  <UserPlus className="w-4 h-4 mr-2" /> Invite Contractor
+  </button>
+  )}
+  <button onClick={signOut} className="flex items-center px-4 py-2 rounded-xl border border-gray-300 text-gray-600 hover:shadow">
+  <LogOut className="w-4 h-4 mr-2" /> Sign Out
+  </button>
+  </div>
+  </div>
+  </div>
+  <div className="max-w-7xl mx-auto">{children}</div>
+    
+      {/* Admin Modals */}
+        <InviteContractorModal 
+          isOpen={showInviteModal} 
+          onClose={() => setShowInviteModal(false)} 
+        />
       </div>
-      <div className="max-w-7xl mx-auto">{children}</div>
-    </div>
-  );
+    );
 }

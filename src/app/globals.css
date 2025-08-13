@@ -1,6 +1,18 @@
 :root {
   --background: #ffffff;
   --foreground: #0a0a0a;
+  
+  /* Tweet/Garot Brand Colors */
+  --tg-primary-50: #f0f2f9;
+  --tg-primary-100: #e1e7f3;
+  --tg-primary-200: #c3cfe7;
+  --tg-primary-300: #a5b7db;
+  --tg-primary-400: #879fcf;
+  --tg-primary-500: #4361a3;
+  --tg-primary-600: #1C295B;
+  --tg-primary-700: #162244;
+  --tg-primary-800: #101a33;
+  --tg-primary-900: #0a1122;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -13,4 +25,30 @@
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--tg-primary-400);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--tg-primary-600);
+}
+
+/* Smooth animations */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
 }
