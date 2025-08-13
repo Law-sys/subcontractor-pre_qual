@@ -68,13 +68,6 @@ RESEND_FROM_EMAIL=your_verified_email@yourdomain.com
 NEXT_PUBLIC_MOCK_AUTH=true
 ```
 
-### Current Configuration
-
-The application is pre-configured with:
-- **API Key**: `re_DW6Ea5Dr_H2695yQpWbQMV9j1id1bSxL8`
-- **From Email**: `max.vanasten@tweetgarot.com`
-- **Domain**: `tweetgarot.com`
-
 ## 🛠️ Installation
 
 1. **Install dependencies**:
