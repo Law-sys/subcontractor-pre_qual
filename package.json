@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "setup": "node -e \"console.log('Run setup.bat on Windows or setup.sh on Mac/Linux')\"",
-    "test": "echo \"No tests specified\" && exit 0"
+    "test": "echo \"No tests specified\" && exit 0",
+    "vercel-build": "npm run build",
+    "postbuild": "echo 'Build completed successfully'"
   },
   "dependencies": {
     "clsx": "^2.1.1",

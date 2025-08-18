@@ -15,10 +15,14 @@ class CompleteOCRService {
         try {
           const T = (await import("tesseract.js")) as any;
           if (T?.createWorker) {
-            this.ocrWorker = await T.createWorker("eng");
+            this.ocrWorker = await T.createWorker("eng", {
+              cachePath: '/tmp/tesseract', // Vercel-friendly cache path
+              gzip: false
+            });
             this.hasAdvancedOCR = true;
           }
-        } catch {
+        } catch (e) {
+          console.warn("Tesseract initialization failed:", e);
           // fallback: window.Tesseract if a CDN script is included
           const w = (window as any);
           if (w?.Tesseract?.createWorker) {

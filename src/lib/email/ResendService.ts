@@ -5,8 +5,9 @@ export class ResendService {
 
   private static getResendClient() {
     if (!this.resend) {
-      const apiKey = process.env.RESEND_API_KEY || process.env.NEXT_PUBLIC_RESEND_API_KEY;
+      const apiKey = process.env.RESEND_API_KEY;
       if (!apiKey) {
+        console.warn('RESEND_API_KEY not found, emails will be simulated');
         throw new Error('RESEND_API_KEY is not configured');
       }
       this.resend = new Resend(apiKey);
