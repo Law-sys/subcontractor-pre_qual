@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { UserPlus, Send, CheckCircle, AlertCircle } from "lucide-react";
 import SmartInput from "../SmartInput";
-import { mockAuth } from "@/lib/auth/mockAuth";
+import { mongoAuth } from "@/lib/auth/mongoAuth";
 
 export default function InviteContractorModal({ 
   isOpen, 
@@ -24,11 +24,56 @@ export default function InviteContractorModal({
     setResult(null);
 
     try {
-      const invitation = mockAuth.inviteContractor(email.trim(), companyName.trim());
-      setResult({ 
-        success: true, 
-        message: `Invitation sent successfully! Access code: ${invitation.code}` 
-      });
+      // For MongoDB auth, we need a user ID - using a default admin ID for demo
+      // In production, this would come from the authenticated user
+      const useMockAuth = process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
+      
+      if (useMockAuth) {
+        // Use mock auth
+        const invitation = await mockAuth.inviteContractor(email.trim(), companyName.trim());
+        setResult({ 
+          success: true, 
+          message: `Invitation sent successfully! Access code: ${invitation.code}` 
+        });
+      } else {
+        // Use MongoDB auth - send API request
+        const response = await fetch('/api/admin/invitations', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+            companyName: companyName.trim(),
+            createdBy: 'default_admin_id' // In production, get from authenticated user
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Send the actual email invitation
+          await fetch('/api/send-invitation', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              email: email.trim(),
+              accessCode: result.data.accessCode,
+              companyName: companyName.trim(),
+              portalUrl: window.location.origin
+            })
+          });
+          
+          setResult({ 
+            success: true, 
+            message: `Invitation sent successfully! Access code: ${result.data.accessCode}` 
+          });
+        } else {
+          throw new Error(result.error);
+        }
+      }
       
       // Clear form after successful invite
       setTimeout(() => {

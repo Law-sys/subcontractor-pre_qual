@@ -5,6 +5,7 @@ import TweetgarotLogo from "./TweetgarotLogo";
 import SmartInput from "./SmartInput";
 import { Mail, Lock, ArrowRight, LogOut, UserPlus } from "lucide-react";
 import { mockAuth } from "../lib/auth/mockAuth";
+import { mongoAuth } from "../lib/auth/mongoAuth";
 import InviteContractorModal from "./admin/InviteContractorModal";
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
@@ -15,16 +16,33 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  
+  // Use MongoDB auth if NEXT_PUBLIC_MOCK_AUTH is false
+  const useMockAuth = process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
+  const authService = useMockAuth ? mockAuth : mongoAuth;
 
   useEffect(() => {
-    setUser(mockAuth.currentUser);
-    setLoading(false);
-  }, []);
+    const initializeAuth = async () => {
+      try {
+        if (!useMockAuth) {
+          // Initialize MongoDB auth and default users
+          await mongoAuth.initializeDefaultUsers();
+        }
+        setUser(authService.currentUser);
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    initializeAuth();
+  }, [useMockAuth, authService]);
 
   const signIn = async () => {
     setError(""); setBusy(true);
     try {
-      const res = await mockAuth.signInWithEmail(email, accessCode);
+      const res = await authService.signInWithEmail(email, accessCode);
       setUser(res.user);
     } catch (e: any) {
       setError(e.message || "Sign in failed");
@@ -34,7 +52,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   };
 
   const signOut = async () => {
-    await mockAuth.signOut();
+    await authService.signOut();
     setUser(null); setEmail(""); setAccessCode(""); setError("");
   };
 

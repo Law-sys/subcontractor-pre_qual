@@ -9,6 +9,7 @@ import { useAutoSave } from "../hooks/useAutoSave";
 import { Brain, Building, DollarSign } from "lucide-react";
 import TweetgarotLogo from "../components/TweetgarotLogo";
 import { EnterpriseAIService } from "@/lib/analysis/EnterpriseAIService";
+import { mockAuth } from "../lib/auth/mockAuth";
 
 export default function Page() {
   const [formData, setFormData] = useState({
@@ -38,6 +39,32 @@ export default function Page() {
     const rsl = EnterpriseAIService.calculateContractorScore(formData as any);
     setResults(rsl);
     setCalculating(false);
+
+    // Save submission to database (MongoDB or mock)
+    try {
+      const useMockAuth = process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
+      
+      if (useMockAuth) {
+        // Use mock auth to save submission
+        mockAuth.saveSubmission(formData, rsl);
+      } else {
+        // Save to MongoDB via API
+        await fetch('/api/submissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            formData,
+            results: rsl,
+            documents: [], // TODO: Include file analysis results
+            userId: 'user_id_from_auth' // In production, get from authenticated user
+          })
+        });
+      }
+      
+      console.log('✅ Submission saved to database');
+    } catch (error) {
+      console.warn('⚠️ Failed to save submission:', error);
+    }
 
     // Send completion notifications
     try {
